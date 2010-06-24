@@ -33,7 +33,7 @@ public class Main {
 		ClassWriter cw = new ClassWriter(0);
 
 		reader.accept(
-			new LogRenamer(cw, "org/apache/log4j/Logger", "woodchipper/Log4Replacement"), 0);
+			new LogRenamer(cw, "org/apache/log4j/", "woodchipper/log4j/"), 0);
 
 		System.out.println("writing...");
 		
