@@ -32,6 +32,8 @@ public class Main {
 		out.flush();
 		out.close();
 
+		System.out.println("Modified: " + cr.isModified());
+
 		System.out.println("Referenced classes:");
 		for(Class<?> cl: cr.getReferenced()) {
 			System.out.println(cl);

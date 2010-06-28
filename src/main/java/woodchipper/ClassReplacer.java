@@ -18,6 +18,7 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 	private String from;
 	private String to;
 	private String currentClassName;
+	private boolean modified;
 
 	protected Set<String> cached = new HashSet<String>();
 	protected Set<Class<?>> referenced = new HashSet<Class<?>>();
@@ -47,6 +48,7 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 
 			referenced.add(clazz);
 			cached.add(key);
+			modified = true;
 
 			return true;
 
@@ -64,6 +66,8 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 		try {
 			referenced.add(Class.forName(Type.getType(desc).getClassName()));
 			cached.add(key);
+			modified = true;
+
 			return true;
 		} catch (ClassNotFoundException cnfe) {
 		}
@@ -74,6 +78,7 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName,
 			String[] interfaces) {
+		this.modified = false;
 		this.currentClassName = name;
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
@@ -144,6 +149,10 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 
 	public Set<Class<?>> getReferenced() {
 		return referenced;
+	}
+
+	public boolean isModified() {
+		return modified;
 	}
 
 }
