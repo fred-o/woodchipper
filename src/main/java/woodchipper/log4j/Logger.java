@@ -6,7 +6,7 @@ package woodchipper.log4j;
  *
  * @author fredrik
  */
-public class Logger {
+public class Logger extends Category {
 
 	public static Logger getLogger(Class<?> clazz) {
 		return new Logger();
@@ -20,77 +20,14 @@ public class Logger {
 		return new Logger();
 	}
 
-	public void debug(Object message, Throwable t) {
-	}
-
-	public void debug(Object message) {
-	}
-
-	public void error(Object message, Throwable t) {
-		System.out.println(message);
-		t.printStackTrace();
-	}
-
-	public void error(Object message) {
-		System.out.println(message);
-	}
-
-	public void fatal(Object message, Throwable t) {
-		System.out.println(message);
-		t.printStackTrace();
-	}
-
-	public void fatal(Object message) {
-		System.out.println(message);
-	}
-
-	public void info(Object message, Throwable t) {
-		System.out.println(message);
-		t.printStackTrace();
-	}
-
-	public void info(Object message) {
-		System.out.println(message);
-	}
-
-	public boolean isDebugEnabled() {
-		return false;
-	}
-
-	public boolean isEnabledFor(Priority level) {
-		return false;
-	}
-
-	public boolean isInfoEnabled() {
-		return true;
-	}
-
 	public boolean isTraceEnabled() {
 		return false;
-	}
-
-	public void log(Priority priority, Object message, Throwable t) {
-	}
-
-	public void log(Priority priority, Object message) {
-	}
-
-	public void log(String callerFQCN, Priority level, Object message, Throwable t) {
 	}
 
 	public void trace(Object message, Throwable t) {
 	}
 
 	public void trace(Object message) {
-	}
-
-	public void warn(Object message, Throwable t) {
-		System.out.println(message);
-		t.printStackTrace();
-	}
-
-	public void warn(Object message) {
-		System.out.println(message);
 	}
 
 }

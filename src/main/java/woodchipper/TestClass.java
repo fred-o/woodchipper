@@ -1,5 +1,6 @@
 package woodchipper;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class TestClass {
@@ -21,6 +22,9 @@ public class TestClass {
 		Logger LOG2 = Logger.getLogger(TestClass.class);
 	    LOG2.info("second message!");
 		new TestClass();
+
+		LOG2.log(Level.INFO, "fourth message!");
+
 	}
 
 }
