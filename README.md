@@ -3,20 +3,19 @@
 This project was [born out of rage][blog1]; I was fed up with the Java
 logging frameworks and decided to do something drastic about it. 
 
-This utility instruments jar files by removing all references to
-[Log4J][log4j] logging statements and replacing them with
-`System.out.println()` (for `log()` and `warn()`) or
-`System.err.println()` (for `error()` and `fatal()`).
+This utility manipulates jar files using bytecode manipulation to
+remove all references to [Log4J][log4j] logging statements:
+
+ * `log()` and `warn()` becomes `System.out.println()`
+ * `error()` and `fatal()` becomes `System.err.println()` 
 
 ## Installation 
 
 You need maven installed.
 
-   > git clone http://github.com/fred-o/woodchipper
-   
-   > cd woodchipper
-   
-   > mvn package
+   bash> git clone http://github.com/fred-o/woodchipper
+   bash> cd woodchipper
+   bash> mvn package
    
 This will create `woodchipper/target/woodchipper.jar`. Copy this jar
 file to wherever its handy.
@@ -25,7 +24,7 @@ file to wherever its handy.
 
 To instrument a jar file
 
-   > java -jar woodchipper.jar -i input.jar -o output.jar
+   bash> java -jar woodchipper.jar -i input.jar -o output.jar
 
 ## Status
 
