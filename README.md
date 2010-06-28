@@ -13,9 +13,9 @@ This utility uses bytecode manipulation to remove all references to
 
 You need maven installed.
 
-   git clone http://github.com/fred-o/woodchipper
-   cd woodchipper
-   mvn package
+    git clone http://github.com/fred-o/woodchipper
+    cd woodchipper
+    mvn package
    
 This will create `woodchipper/target/woodchipper.jar`. Copy this jar
 file to wherever its handy.
@@ -24,7 +24,7 @@ file to wherever its handy.
 
 To instrument a jar file
 
-   java -jar woodchipper.jar -i input.jar -o output.jar
+    java -jar woodchipper.jar -i input.jar -o output.jar
 
 ## Status
 
