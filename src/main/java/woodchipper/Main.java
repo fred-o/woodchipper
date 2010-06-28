@@ -21,8 +21,9 @@ public class Main {
 
 		ClassWriter cw = new ClassWriter(0);
 
-		reader.accept(
-			new LogRenamer(cw, "org/apache/log4j/", "woodchipper/log4j/"), 0);
+		ClassReplacer cr = new Log4jReplacer(cw);
+
+		reader.accept(cr, 0);
 
 		System.out.println("writing...");
 		
@@ -30,6 +31,11 @@ public class Main {
 		out.write(cw.toByteArray());
 		out.flush();
 		out.close();
+
+		System.out.println("Referenced classes:");
+		for(Class<?> cl: cr.getReferenced()) {
+			System.out.println(cl);
+		}
 
 	}
 

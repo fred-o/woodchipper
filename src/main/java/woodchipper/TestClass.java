@@ -2,6 +2,7 @@ package woodchipper;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 
 public class TestClass {
     
@@ -11,12 +12,18 @@ public class TestClass {
 	}
 
 	Logger LOG3;
+	Priority priority;
 
 	public TestClass() {
 		LOG3 = Logger.getLogger(TestClass.class);
 		LOG3.info("third message!");
+		noop(13);
+
+//		LOG3.callAppenders(null);
 	}
 	
+	public void noop(int i) {
+	}
 
 	public static void main(String[] argv) {
 		Logger LOG2 = Logger.getLogger(TestClass.class);
@@ -24,7 +31,6 @@ public class TestClass {
 		new TestClass();
 
 		LOG2.log(Level.INFO, "fourth message!");
-
 	}
 
 }
