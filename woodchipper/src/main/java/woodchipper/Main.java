@@ -1,21 +1,35 @@
 package woodchipper;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
 
 public class Main {
 
     public static void main(String[] argv) throws Exception {
 
-		JarProcessor jp = new JarProcessor(
-			new File("../woodchipper-test-jar/target/woodchipper-test-jar-1.0-SNAPSHOT.jar"),
-			new File("target/out.jar"));
-		jp.process();
+		Opts opts = new Opts();
+		CmdLineParser parser = new CmdLineParser(opts);
+		try {
+			parser.parseArgument(argv);
+			new JarProcessor(opts.in, opts.out).process();
+
+		} catch (CmdLineException cle) {
+			System.err.println(cle.getMessage());
+			System.err.println("java -jar woodchipper.jar -i <in> -o <out>");
+			parser.printUsage(System.err);
+		}
+	}
+
+	static class Opts {
+
+		@Option(name="-i", usage=".jar file to read", required=true)
+		private File in;
+
+		@Option(name="-o", usage=".jar file to write to", required=true)
+		private File out;
 
 	}
 
