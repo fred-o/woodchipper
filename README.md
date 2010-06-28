@@ -3,11 +3,13 @@
 This project was [born out of rage][blog1]; I was fed up with the Java
 logging frameworks and decided to do something drastic about it. 
 
-This utility uses bytecode manipulation to remove all references to
-[Log4J][log4j] logging statements from any jar file:
+This utility uses bytecode manipulation to remove all traces of
+[Log4J][log4j] from any jar file:
 
  * `log()` and `warn()` becomes `System.out.println()`
  * `error()` and `fatal()` becomes `System.err.println()` 
+ * all other log statements are discarded
+ * `log4j.properties` is removed
 
 ## Installation 
 
