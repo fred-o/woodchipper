@@ -1,5 +1,6 @@
 package woodchipper;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -11,33 +12,10 @@ public class Main {
 
     public static void main(String[] argv) throws Exception {
 
-		String file = "target/classes/woodchipper/TestClass.class";
-
-		System.out.println("reading...");
-
-		InputStream in = new FileInputStream(file);
-		ClassReader reader = new ClassReader(in);
-
-
-		ClassWriter cw = new ClassWriter(0);
-
-		ClassReplacer cr = new Log4jReplacer(cw);
-
-		reader.accept(cr, 0);
-
-		System.out.println("writing...");
-		
-		FileOutputStream out = new FileOutputStream(file);
-		out.write(cw.toByteArray());
-		out.flush();
-		out.close();
-
-		System.out.println("Modified: " + cr.isModified());
-
-		System.out.println("Referenced classes:");
-		for(Class<?> cl: cr.getReferenced()) {
-			System.out.println(cl);
-		}
+		JarProcessor jp = new JarProcessor(
+			new File("../woodchipper-test-jar/target/woodchipper-test-jar-1.0-SNAPSHOT.jar"),
+			new File("target/out.jar"));
+		jp.process();
 
 	}
 
