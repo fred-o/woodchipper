@@ -38,7 +38,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<outputDirectory>${parent.basedir}</outputDirectory>
 					<finalName>woodchipper</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 					<classifier></classifier>
