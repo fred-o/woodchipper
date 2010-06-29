@@ -13,6 +13,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -20,6 +21,8 @@ public class JarProcessor {
 
 	JarFile in;
 	JarOutputStream out;
+	File output;
+	File tmp;
 
 	Set<Class<?>> referenced = new HashSet<Class<?>>();
 	Set<String> names = new HashSet<String>();
@@ -29,7 +32,9 @@ public class JarProcessor {
 
 	public JarProcessor(File input, File output) throws IOException {
 		this.in = new JarFile(input);
-		this.out = new JarOutputStream(new FileOutputStream(output));
+		this.output = output;
+		this.tmp = File.createTempFile("woodchipper", "jar");
+		this.out = new JarOutputStream(new FileOutputStream(tmp));
 	}
 
 	private void reference(Class<?> clazz) {
@@ -71,7 +76,6 @@ public class JarProcessor {
 			names.add(entry.getName());
 			out.closeEntry();
 		}
-
 	}
 
 	protected void addReferencedDirectories() throws IOException {
@@ -105,11 +109,13 @@ public class JarProcessor {
 			copyEntries();
 			addReferencedDirectories();
 			addReferencedClasses();
-		}
-		finally {
+		} finally {
 			out.flush();
 			out.close();
 		}
+		
+		FileUtils.copyFile(tmp, output);
+		FileUtils.deleteQuietly(tmp);
 
 	}
 

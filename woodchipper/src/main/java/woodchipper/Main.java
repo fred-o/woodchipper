@@ -14,6 +14,10 @@ public class Main {
 		CmdLineParser parser = new CmdLineParser(opts);
 		try {
 			parser.parseArgument(argv);
+
+			if (opts.out == null)
+				opts.out = opts.in;
+
 			new JarProcessor(opts.in, opts.out).process();
 
 		} catch (CmdLineException cle) {
@@ -28,7 +32,7 @@ public class Main {
 		@Option(name="-i", usage=".jar file to read", required=true)
 		private File in;
 
-		@Option(name="-o", usage=".jar file to write to", required=true)
+		@Option(name="-o", usage=".jar file to write to")
 		private File out;
 
 	}
