@@ -85,7 +85,7 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-//		System.out.println("visit: " + name + " - " + desc + " - " + signature);
+		// System.out.println("visitFIELD: " + name + " - " + desc + " - " + signature);
 
 		String modifiedDesc = desc.replaceAll(from, to);
 
@@ -102,7 +102,8 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		return new LogMethodRenamer(cv.visitMethod(access, name, desc, signature, exceptions));
+		// System.out.println("visitMETHOD: " + name + " - " + desc + " - " + signature);
+		return new LogMethodRenamer(cv.visitMethod(access, name, desc.replaceAll(from, to), signature, exceptions));
 	}
 
 	class LogMethodRenamer extends MethodAdapter {
@@ -135,15 +136,15 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 			String modifiedOwner = owner.replaceAll(from, to);
 			String modifiedDesc = desc.replaceAll(from, to);
 
-			if (!modifiedOwner.equals(owner) || !modifiedDesc.equals(desc)) {
+			if (!modifiedOwner.equals(owner)) {
 				if (hasReplacementMethod(modifiedOwner, name, modifiedDesc)) {
 					super.visitMethodInsn(opcode, modifiedOwner, name, modifiedDesc);
+					return;
 				} else {
 					throw new CouldNotReplaceException(currentClassName + "#" + name + desc);
 				}
-			} else {
-				super.visitMethodInsn(opcode, owner, name, desc);
-			}
+			} 
+			super.visitMethodInsn(opcode, owner, name, modifiedDesc);
 		}
 	}
 

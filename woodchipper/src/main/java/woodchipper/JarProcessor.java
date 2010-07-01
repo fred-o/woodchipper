@@ -97,9 +97,12 @@ public class JarProcessor {
 	protected void addReferencedClasses() throws IOException {
 		for(Class<?> ref: referenced) {
 			String name = ref.getCanonicalName().replaceAll("\\.", "/") + ".class";
-			out.putNextEntry(new JarEntry(name));
-			copy(ref.getClassLoader().getResourceAsStream(name), out);
-			out.closeEntry();
+			if (!names.contains(name)) {
+				out.putNextEntry(new JarEntry(name));
+				copy(ref.getClassLoader().getResourceAsStream(name), out);
+				out.closeEntry();
+				names.add(name);
+			} 
 		}
 	}
 
