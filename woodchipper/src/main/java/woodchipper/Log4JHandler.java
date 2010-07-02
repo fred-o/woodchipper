@@ -1,8 +1,11 @@
 package woodchipper;
 
+import java.io.File;
 import java.io.FileFilter;
 
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.NameFileFilter;
+import org.apache.commons.io.filefilter.OrFileFilter;
 import org.objectweb.asm.ClassVisitor;
 
 public class Log4JHandler extends LogSystemHandler {
@@ -14,7 +17,16 @@ public class Log4JHandler extends LogSystemHandler {
 
 	@Override
 	public FileFilter getFilter() {
-		return new NameFileFilter("log4j.properties");
+		return new OrFileFilter(
+			new NameFileFilter("log4j.properties"),
+			new IOFileFilter() {
+				public boolean accept(File file) {
+					return file.getAbsolutePath().contains("org/apache/log4j");
+				}
+				public boolean accept(File file, String name) {
+					return file.getAbsolutePath().contains("org/apache/log4j");
+				}
+			});
 	}
 
 	@Override

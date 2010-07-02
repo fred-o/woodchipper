@@ -90,39 +90,40 @@ public class JarProcessor {
 		for(Enumeration<JarEntry> entries = in.entries(); entries.hasMoreElements();) {
 			JarEntry entry = entries.nextElement();
 			String fileName = entry.getName();
-			if (!fileName.endsWith(".class")) {
-				if(!this.fileFilter.accept(new File(fileName))) {
+
+			if(!this.fileFilter.accept(new File(fileName))) {
+				if (!fileName.endsWith(".class")) {
 					out.putNextEntry(entry);
 					copy(in.getInputStream(entry), out);
-				}
-			} else {
-				out.putNextEntry(new JarEntry(fileName));
-				ClassWriter writer = new ClassWriter(0);
+				} else {
+					out.putNextEntry(new JarEntry(fileName));
+					ClassWriter writer = new ClassWriter(0);
 
-				List<HandlerReplacerPair> pairs = new LinkedList<HandlerReplacerPair>();
-				ClassVisitor cv = writer;
-				for(LogSystemHandler handler: handlers) {
-					pairs.add(0, new HandlerReplacerPair(handler, handler.makeClassReplacer(cv)));
-					cv = pairs.get(0).replacer;
-				}
-
-				ClassReader reader = new ClassReader(in.getInputStream(entry));
-				reader.accept(cv, 0);
-				out.write(writer.toByteArray());
-
-				for(HandlerReplacerPair pair: pairs) {
-					for(Class<?> ref: pair.replacer.getReferenced()) {
-						reference(ref);
+					List<HandlerReplacerPair> pairs = new LinkedList<HandlerReplacerPair>();
+					ClassVisitor cv = writer;
+					for(LogSystemHandler handler: handlers) {
+						pairs.add(0, new HandlerReplacerPair(handler, handler.makeClassReplacer(cv)));
+						cv = pairs.get(0).replacer;
 					}
-					if (!this.modified && pair.replacer.isModified()) {
-						System.out.println("Removed " + pair.handler.getSystemName() + " references from " 
-								+ input.getName());
-						this.modified = true;
+
+					ClassReader reader = new ClassReader(in.getInputStream(entry));
+					reader.accept(cv, 0);
+					out.write(writer.toByteArray());
+
+					for(HandlerReplacerPair pair: pairs) {
+						for(Class<?> ref: pair.replacer.getReferenced()) {
+							reference(ref);
+						}
+						if (!this.modified && pair.replacer.isModified()) {
+							System.out.println("Removed " + pair.handler.getSystemName() + " references from " 
+									+ input.getName());
+							this.modified = true;
+						}
 					}
 				}
+				names.add(entry.getName());
+				out.closeEntry();
 			}
-			names.add(entry.getName());
-			out.closeEntry();
 		}
 	}
 
@@ -174,7 +175,7 @@ public class JarProcessor {
 		} catch (CouldNotReplaceException cnre) {
 			System.out.println(input.getName() + ": the class " + cnre.getReferencingClass() + 
 					" references " + cnre.getSignature() + 
-				", which woodchipper unfortunatly could not handle.");
+					", which woodchipper unfortunatly could not handle.");
 			cnre.printStackTrace();
 		}
 	}

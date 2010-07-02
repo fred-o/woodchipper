@@ -90,4 +90,8 @@ public class Category {
 		System.out.println(message);
 	}
 
+	public String getName() {
+		return "";
+	}
+
 }
