@@ -11,12 +11,17 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import woodchipper.CouldNotReplaceException;
-
-public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
+/**
+ * A {@link ClassVisitor} implementation that does a wildcard
+ * replacement of the packages of classes referenced.
+ * 
+ * @author fredrik
+ */
+public class ClassReplacer extends ClassAdapter implements Opcodes {
 
 	private String from;
 	private String to;
+
 	private String currentClassName;
 	private boolean modified;
 
@@ -78,7 +83,6 @@ public abstract class ClassReplacer extends ClassAdapter implements Opcodes {
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName,
 			String[] interfaces) {
-		this.modified = false;
 		this.currentClassName = name;
 		super.visit(version, access, name, signature, superName, interfaces);
 	}

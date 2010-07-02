@@ -1,6 +1,7 @@
 package woodchipper;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -18,7 +19,8 @@ public class Main {
 			if (opts.out == null)
 				opts.out = opts.in;
 
-			new JarProcessor(opts.in, opts.out).process();
+			new JarProcessor(opts.in, opts.out, 
+				Arrays.<LogSystemHandler>asList(new Log4JHandler()) ).process();
 
 		} catch (CmdLineException cle) {
 			System.err.println(cle.getMessage());

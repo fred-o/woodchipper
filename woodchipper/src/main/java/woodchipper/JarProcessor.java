@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -15,26 +17,34 @@ import java.util.jar.JarOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+
+import woodchipper.LogSystemHandler;
 
 public class JarProcessor {
 
 	JarFile in;
 	JarOutputStream out;
+	File input;
 	File output;
 	File tmp;
+	List<LogSystemHandler> handlers;
 
 	Set<Class<?>> referenced = new HashSet<Class<?>>();
 	Set<String> names = new HashSet<String>();
+	boolean modified = false;
 
 	byte[] buf = new byte[10000];
 	int len;
 
-	public JarProcessor(File input, File output) throws IOException {
+	public JarProcessor(File input, File output, List<LogSystemHandler> handlers) throws IOException {
 		this.in = new JarFile(input);
+		this.input = input;
 		this.output = output;
 		this.tmp = File.createTempFile("woodchipper", "jar");
 		this.out = new JarOutputStream(new FileOutputStream(tmp));
+		this.handlers = handlers;
 	}
 
 	private void reference(Class<?> clazz) {
@@ -56,6 +66,16 @@ public class JarProcessor {
 		}
 	}
 
+	private static class HandlerReplacerPair {
+		public final LogSystemHandler handler;
+		public final ClassReplacer replacer;
+
+		public HandlerReplacerPair(LogSystemHandler handler, ClassReplacer replacer) {
+			this.handler = handler;
+			this.replacer = replacer;
+		}
+	}
+
 	protected void copyEntries() throws IOException {
 		for(Enumeration<JarEntry> entries = in.entries(); entries.hasMoreElements();) {
 			JarEntry entry = entries.nextElement();
@@ -65,12 +85,27 @@ public class JarProcessor {
 			} else {
 				out.putNextEntry(new JarEntry(entry.getName()));
 				ClassWriter writer = new ClassWriter(0);
-				ClassReplacer replacer = new Log4jReplacer(writer);
+
+				List<HandlerReplacerPair> pairs = new LinkedList<HandlerReplacerPair>();
+				ClassVisitor cv = writer;
+				for(LogSystemHandler handler: handlers) {
+					pairs.add(0, new HandlerReplacerPair(handler, handler.makeClassReplacer(cv)));
+					cv = pairs.get(0).replacer;
+				}
+
 				ClassReader reader = new ClassReader(in.getInputStream(entry));
-				reader.accept(replacer, 0);
+				reader.accept(cv, 0);
 				out.write(writer.toByteArray());
-				for(Class<?> ref: replacer.getReferenced()) {
-					reference(ref);
+
+				for(HandlerReplacerPair pair: pairs) {
+					for(Class<?> ref: pair.replacer.getReferenced()) {
+						reference(ref);
+					}
+					if (pair.replacer.isModified()) {
+						System.out.println("Replaced " + pair.handler.getSystemName() + " references from " 
+							+ input.getName());
+					}
+					this.modified |= pair.replacer.isModified();
 				}
 			}
 			names.add(entry.getName());
@@ -110,16 +145,19 @@ public class JarProcessor {
 
 		try {
 			copyEntries();
-			addReferencedDirectories();
-			addReferencedClasses();
+			if (modified) {
+				addReferencedDirectories();
+				addReferencedClasses();
+			} 
 		} finally {
 			out.flush();
 			out.close();
 		}
 		
-		FileUtils.copyFile(tmp, output);
-		FileUtils.deleteQuietly(tmp);
-
+		if (modified) {
+			FileUtils.copyFile(tmp, output);
+			FileUtils.deleteQuietly(tmp);
+		}
 	}
 
 }
