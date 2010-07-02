@@ -1,5 +1,6 @@
 package woodchipper;
 
+import java.lang.reflect.Array;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +35,20 @@ public class ClassReplacer extends ClassAdapter implements Opcodes {
 		this.to = to;
 	}
 
+	private Class<?> getClassForType(Type type) throws ClassNotFoundException {
+		switch(type.getSort()) {
+		case Type.INT: return Integer.TYPE;
+		case Type.LONG: return Long.TYPE;
+		case Type.SHORT: return Short.TYPE;
+		case Type.BYTE: return Byte.TYPE;
+		case Type.CHAR: return Character.TYPE;
+		case Type.FLOAT: return Float.TYPE;
+		case Type.DOUBLE: return Double.TYPE;
+		case Type.BOOLEAN: return Boolean.TYPE;
+		default: return Class.forName(type.getClassName());
+		}
+	}
+
 	protected boolean hasReplacementMethod(String owner, String name, String desc) {
 		String key = owner + "|" + name + "|" + desc;
 		if (cached.contains(key)) 
@@ -46,7 +61,7 @@ public class ClassReplacer extends ClassAdapter implements Opcodes {
 			Class<?>[] args = new Class[signature.length];
 			
 			for(int i = 0; i < signature.length; i++) {
-			    args[i] = Class.forName(signature[i].getClassName());
+			    args[i] = getClassForType(signature[i]);
 			}
 
 			clazz.getMethod(name, args);
@@ -97,7 +112,7 @@ public class ClassReplacer extends ClassAdapter implements Opcodes {
 			if (hasReplacementClass(modifiedDesc)) {
 				return super.visitField(access, name, modifiedDesc, signature, value);
 			} else {
-				throw new CouldNotReplaceException(currentClassName + "#" + name + desc);
+				throw new CouldNotReplaceException(currentClassName, currentClassName + "#" + name + desc);
 			}
 		} else {
 			return super.visitField(access, name, desc, signature, value);
@@ -126,7 +141,7 @@ public class ClassReplacer extends ClassAdapter implements Opcodes {
 				if (hasReplacementClass(modifiedDesc)) {
 					super.visitFieldInsn(opcode, modifiedOwner, name, modifiedDesc);
 				} else {
-					throw new CouldNotReplaceException(currentClassName + "#" + name + desc);
+					throw new CouldNotReplaceException(currentClassName, owner + "#" + name + desc);
 				}
 			} else {
 				super.visitFieldInsn(opcode, owner, name, desc);
@@ -145,7 +160,7 @@ public class ClassReplacer extends ClassAdapter implements Opcodes {
 					super.visitMethodInsn(opcode, modifiedOwner, name, modifiedDesc);
 					return;
 				} else {
-					throw new CouldNotReplaceException(currentClassName + "#" + name + desc);
+					throw new CouldNotReplaceException(currentClassName, owner + "#" + name + desc);
 				}
 			} 
 			super.visitMethodInsn(opcode, owner, name, modifiedDesc);

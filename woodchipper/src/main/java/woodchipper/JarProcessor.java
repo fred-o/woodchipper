@@ -172,7 +172,8 @@ public class JarProcessor {
 				FileUtils.deleteQuietly(tmp);
 			}
 		} catch (CouldNotReplaceException cnre) {
-			System.out.println(input.getName() + " references " + cnre.getMessage() + 
+			System.out.println(input.getName() + ": the class " + cnre.getReferencingClass() + 
+					" references " + cnre.getSignature() + 
 				", which woodchipper unfortunatly could not handle.");
 			cnre.printStackTrace();
 		}
