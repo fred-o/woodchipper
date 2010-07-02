@@ -91,7 +91,7 @@ public class JarProcessor {
 			JarEntry entry = entries.nextElement();
 			String fileName = entry.getName();
 
-			if(!this.fileFilter.accept(new File(fileName))) {
+			if(!names.contains(fileName) && !this.fileFilter.accept(new File(fileName))) {
 				if (!fileName.endsWith(".class")) {
 					out.putNextEntry(entry);
 					copy(in.getInputStream(entry), out);
@@ -121,7 +121,7 @@ public class JarProcessor {
 						}
 					}
 				}
-				names.add(entry.getName());
+				names.add(fileName);
 				out.closeEntry();
 			}
 		}
