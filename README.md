@@ -8,7 +8,10 @@ This utility uses bytecode manipulation to remove all traces of
 
  * `log()` and `warn()` becomes `System.out.println()`
  * `error()` and `fatal()` becomes `System.err.println()` 
- * all other log statements are discarded
+ * Other statements are replaced with NOOP operations if
+   possible. Note however, that there are some some advanced usage
+   scenarios that WoodChipper doesn't know how to handle. But if your
+   are only doing basic logging you should be fine.
  * `log4j.properties` is removed
 
 ## Installation 
@@ -24,9 +27,12 @@ file to wherever its handy.
 
 ## Running
 
-To instrument a jar file
+To instrument a jar file:
 
-    java -jar woodchipper.jar -i input.jar -o output.jar
+    java -jar woodchipper.jar -i <input.jar> -o <output.jar>
+
+The `-o` argument is optional. If left out, the input jar is modified
+in place.
 
 ## Status
 
