@@ -2,6 +2,7 @@ package woodchipper;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.OrFileFilter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -33,6 +35,8 @@ public class JarProcessor {
 
 	Set<Class<?>> referenced = new HashSet<Class<?>>();
 	Set<String> names = new HashSet<String>();
+	FileFilter fileFilter;
+
 	boolean modified = false;
 
 	byte[] buf = new byte[10000];
@@ -45,6 +49,12 @@ public class JarProcessor {
 		this.tmp = File.createTempFile("woodchipper", "jar");
 		this.out = new JarOutputStream(new FileOutputStream(tmp));
 		this.handlers = handlers;
+		
+		List<FileFilter> filters = new LinkedList<FileFilter>();
+		for(LogSystemHandler handler: handlers) {
+			filters.add(handler.getFilter());
+		}
+		this.fileFilter = new OrFileFilter(filters);
 	}
 
 	private void reference(Class<?> clazz) {
@@ -79,11 +89,14 @@ public class JarProcessor {
 	protected void copyEntries() throws IOException {
 		for(Enumeration<JarEntry> entries = in.entries(); entries.hasMoreElements();) {
 			JarEntry entry = entries.nextElement();
-			if (!entry.getName().endsWith(".class")) {
-				out.putNextEntry(entry);
-				copy(in.getInputStream(entry), out);
+			String fileName = entry.getName();
+			if (!fileName.endsWith(".class")) {
+				if(!this.fileFilter.accept(new File(fileName))) {
+					out.putNextEntry(entry);
+					copy(in.getInputStream(entry), out);
+				}
 			} else {
-				out.putNextEntry(new JarEntry(entry.getName()));
+				out.putNextEntry(new JarEntry(fileName));
 				ClassWriter writer = new ClassWriter(0);
 
 				List<HandlerReplacerPair> pairs = new LinkedList<HandlerReplacerPair>();
