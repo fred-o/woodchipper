@@ -114,11 +114,11 @@ public class JarProcessor {
 					for(Class<?> ref: pair.replacer.getReferenced()) {
 						reference(ref);
 					}
-					if (pair.replacer.isModified()) {
-						System.out.println("Replaced " + pair.handler.getSystemName() + " references from " 
-							+ input.getName());
+					if (!this.modified && pair.replacer.isModified()) {
+						System.out.println("Removed " + pair.handler.getSystemName() + " references from " 
+								+ input.getName());
+						this.modified = true;
 					}
-					this.modified |= pair.replacer.isModified();
 				}
 			}
 			names.add(entry.getName());
@@ -155,21 +155,26 @@ public class JarProcessor {
 	}
 
 	public void process() throws IOException {
-
 		try {
-			copyEntries();
-			if (modified) {
-				addReferencedDirectories();
-				addReferencedClasses();
-			} 
-		} finally {
-			out.flush();
-			out.close();
-		}
+			try {
+				copyEntries();
+				if (modified) {
+					addReferencedDirectories();
+					addReferencedClasses();
+				} 
+			} finally {
+				out.flush();
+				out.close();
+			}
 		
-		if (modified) {
-			FileUtils.copyFile(tmp, output);
-			FileUtils.deleteQuietly(tmp);
+			if (modified) {
+				FileUtils.copyFile(tmp, output);
+				FileUtils.deleteQuietly(tmp);
+			}
+		} catch (CouldNotReplaceException cnre) {
+			System.out.println(input.getName() + " references " + cnre.getMessage() + 
+				", which woodchipper unfortunatly could not handle.");
+			cnre.printStackTrace();
 		}
 	}
 
