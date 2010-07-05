@@ -11,7 +11,7 @@ This utility uses bytecode manipulation to remove all traces of
  * Other statements are replaced with NOOP operations if
    possible. Note however, that there are some some advanced usage
    scenarios that WoodChipper doesn't know how to handle. But if your
-   are only doing basic logging you should be fine.
+   are only dealing with basic logging you should be fine.
  * `log4j.properties` is removed
 
 ## Installation 

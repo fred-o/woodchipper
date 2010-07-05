@@ -17,12 +17,6 @@ public class TestClass {
 	public TestClass() {
 		LOG3 = Logger.getLogger(TestClass.class);
 		LOG3.info("third message!");
-		noop(13);
-
-//		LOG3.callAppenders(null);
-	}
-	
-	public void noop(int i) {
 	}
 
 	public static void main(String[] argv) {
