@@ -31,6 +31,8 @@ public class TestClass {
 		new TestClass();
 
 		LOG2.log(Level.INFO, "fourth message!");
+
+		LOG2.info("fifth message (with exception!)", new IllegalArgumentException());
 	}
 
 }
