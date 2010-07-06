@@ -58,12 +58,17 @@ public class JarProcessor {
 	}
 
 	private void reference(Class<?> clazz) {
+		if (clazz == null)
+			return;
 		if (referenced.contains(clazz))
 			return;
 		if (Object.class == clazz) 
 			return;
 		referenced.add(clazz);
 		reference(clazz.getSuperclass());
+		for(Class<?> iface: clazz.getInterfaces()) {
+			reference(iface);
+		}
 	}
 
 	private void copy(InputStream in, OutputStream out) throws IOException {
@@ -87,6 +92,8 @@ public class JarProcessor {
 	}
 
 	protected void copyEntries() throws IOException {
+		Set<LogSystemHandler> messageShown = new HashSet<LogSystemHandler>();
+
 		for(Enumeration<JarEntry> entries = in.entries(); entries.hasMoreElements();) {
 			JarEntry entry = entries.nextElement();
 			String fileName = entry.getName();
@@ -114,9 +121,10 @@ public class JarProcessor {
 						for(Class<?> ref: pair.replacer.getReferenced()) {
 							reference(ref);
 						}
-						if (!this.modified && pair.replacer.isModified()) {
-							System.out.println("Removed " + pair.handler.getSystemName() + " references from " 
+						if (!messageShown.contains(pair.handler) && pair.replacer.isModified()) {
+							System.out.println("Removing " + pair.handler.getSystemName() + " references from " 
 									+ input.getName());
+							messageShown.add(pair.handler);
 							this.modified = true;
 						}
 					}
@@ -176,7 +184,6 @@ public class JarProcessor {
 			System.out.println(input.getName() + ": the class " + cnre.getReferencingClass() + 
 					" references " + cnre.getSignature() + 
 					", which woodchipper unfortunatly could not handle.");
-			cnre.printStackTrace();
 		}
 	}
 

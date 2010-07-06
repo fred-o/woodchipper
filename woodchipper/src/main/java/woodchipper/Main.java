@@ -7,6 +7,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import woodchipper.CommonsLoggingHandler;
+
 public class Main {
 
     public static void main(String[] argv) throws Exception {
@@ -20,7 +22,10 @@ public class Main {
 				opts.out = opts.in;
 
 			new JarProcessor(opts.in, opts.out, 
-				Arrays.<LogSystemHandler>asList(new Log4JHandler()) ).process();
+					Arrays.<LogSystemHandler>asList(
+						new Log4JHandler(),
+						new CommonsLoggingHandler())
+				).process();
 
 		} catch (CmdLineException cle) {
 			System.err.println(cle.getMessage());
