@@ -96,5 +96,18 @@
 		</repository>
 	</repositories>
 
+	<distributionManagement>
+		<repository>
+			<uniqueVersion>false</uniqueVersion>
+			<id>mulli.nu-releases</id>
+			<url>scp://mulli.nu/var/www/maven/releases</url>
+		</repository>
+		<snapshotRepository>
+			<uniqueVersion>true</uniqueVersion>
+			<id>mulli.nu-snapshots</id>
+			<url>scp://mulli.nu/var/www/maven/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 </project>
 

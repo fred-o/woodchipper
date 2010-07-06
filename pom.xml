@@ -13,6 +13,22 @@
 		<module>woodchipper-test-jar</module>
 	</modules>
 
+	<licenses>
+		<license>
+			<name>New and Simplified BSD License</name>
+			<url>http://www.opensource.org/licenses/bsd-license.php</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>fredrik</id>
+			<name>Fredrik Appelberg</name>
+			<email>fredrik.appelberg@gmail.com</email>
+			<url>http://mulli.nu</url>
+		</developer>
+	</developers>
 
 </project>
 
