@@ -28,8 +28,6 @@ file to wherever its handy.
 
 ## Running
 
-To instrument a jar file:
-
     java -jar woodchipper.jar -i <input> -o <output>
 
 The input argument should be either a jar file or the classpath that
