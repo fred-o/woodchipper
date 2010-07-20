@@ -3,20 +3,14 @@ package woodchipper;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.JarOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.OrFileFilter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -24,32 +18,30 @@ import org.objectweb.asm.ClassWriter;
 
 import woodchipper.LogSystemHandler;
 
-public class JarProcessor {
+/**
+ * Main processor class; needs an {@link AbstractFileSystem} and a
+ * list of {@link LogSystemHandler}s to go to work.
+ *
+ * @author fredrik
+ */
+public class WoodChipper {
 
-	JarFile in;
-	JarOutputStream out;
-	File input;
-	File output;
-	File tmp;
+	AbstractFileSystem fileSystem;
 	List<LogSystemHandler> handlers;
+	FileFilter fileFilter;
 
 	Set<Class<?>> referenced = new HashSet<Class<?>>();
 	Set<String> names = new HashSet<String>();
-	FileFilter fileFilter;
 
 	boolean modified = false;
 
 	byte[] buf = new byte[10000];
 	int len;
 
-	public JarProcessor(File input, File output, List<LogSystemHandler> handlers) throws IOException {
-		this.in = new JarFile(input);
-		this.input = input;
-		this.output = output;
-		this.tmp = File.createTempFile("woodchipper", "jar");
-		this.out = new JarOutputStream(new FileOutputStream(tmp));
+	public WoodChipper(AbstractFileSystem fileSystem, List<LogSystemHandler> handlers) throws IOException {
+		this.fileSystem = fileSystem;
 		this.handlers = handlers;
-		
+
 		List<FileFilter> filters = new LinkedList<FileFilter>();
 		for(LogSystemHandler handler: handlers) {
 			filters.add(handler.getFilter());
@@ -94,16 +86,15 @@ public class JarProcessor {
 	protected void copyEntries() throws IOException {
 		Set<LogSystemHandler> messageShown = new HashSet<LogSystemHandler>();
 
-		for(Enumeration<JarEntry> entries = in.entries(); entries.hasMoreElements();) {
-			JarEntry entry = entries.nextElement();
-			String fileName = entry.getName();
+		while (fileSystem.next()) {
+			String fileName = fileSystem.getInputPath();
 
 			if(!names.contains(fileName) && !this.fileFilter.accept(new File(fileName))) {
 				if (!fileName.endsWith(".class")) {
-					out.putNextEntry(entry);
-					copy(in.getInputStream(entry), out);
+					fileSystem.nextOutput();
+					copy(fileSystem.getInputStream(), fileSystem.getOutputStream());
 				} else {
-					out.putNextEntry(new JarEntry(fileName));
+					fileSystem.nextOutput(fileName);
 					ClassWriter writer = new ClassWriter(0);
 
 					List<HandlerReplacerPair> pairs = new LinkedList<HandlerReplacerPair>();
@@ -113,9 +104,9 @@ public class JarProcessor {
 						cv = pairs.get(0).replacer;
 					}
 
-					ClassReader reader = new ClassReader(in.getInputStream(entry));
+					ClassReader reader = new ClassReader(fileSystem.getInputStream());
 					reader.accept(cv, 0);
-					out.write(writer.toByteArray());
+					fileSystem.getOutputStream().write(writer.toByteArray());
 
 					for(HandlerReplacerPair pair: pairs) {
 						for(Class<?> ref: pair.replacer.getReferenced()) {
@@ -123,14 +114,13 @@ public class JarProcessor {
 						}
 						if (!messageShown.contains(pair.handler) && pair.replacer.isModified()) {
 							System.out.println("Removing " + pair.handler.getSystemName() + " references from " 
-									+ input.getName());
+									+ fileSystem.getInputPath());
 							messageShown.add(pair.handler);
 							this.modified = true;
 						}
 					}
 				}
 				names.add(fileName);
-				out.closeEntry();
 			}
 		}
 	}
@@ -143,8 +133,7 @@ public class JarProcessor {
 				String name = sb.toString();
 
 				if(!names.contains(name)) {
-					out.putNextEntry(new JarEntry(name));
-					out.closeEntry();
+					fileSystem.addOutputDirectory(name);
 					names.add(name);
 				}
 			}
@@ -155,9 +144,8 @@ public class JarProcessor {
 		for(Class<?> ref: referenced) {
 			String name = ref.getCanonicalName().replaceAll("\\.", "/") + ".class";
 			if (!names.contains(name)) {
-				out.putNextEntry(new JarEntry(name));
-				copy(ref.getClassLoader().getResourceAsStream(name), out);
-				out.closeEntry();
+				fileSystem.nextOutput(name);
+				copy(ref.getClassLoader().getResourceAsStream(name), fileSystem.getOutputStream());
 				names.add(name);
 			} 
 		}
@@ -172,16 +160,14 @@ public class JarProcessor {
 					addReferencedClasses();
 				} 
 			} finally {
-				out.flush();
-				out.close();
+				fileSystem.closeOutput();
 			}
 		
 			if (modified) {
-				FileUtils.copyFile(tmp, output);
-				FileUtils.deleteQuietly(tmp);
+				fileSystem.commit();
 			}
 		} catch (CouldNotReplaceException cnre) {
-			System.out.println(input.getName() + ": the class " + cnre.getReferencingClass() + 
+			System.out.println(fileSystem.getInputPath() + ": the class " + cnre.getReferencingClass() + 
 					" references " + cnre.getSignature() + 
 					", which woodchipper unfortunatly could not handle.");
 		}

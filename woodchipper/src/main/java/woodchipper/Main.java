@@ -7,8 +7,11 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
-import woodchipper.CommonsLoggingHandler;
-
+/**
+ * Main entry point for command line execution.
+ *
+ * @author fredrik
+ */
 public class Main {
 
     public static void main(String[] argv) throws Exception {
@@ -21,10 +24,11 @@ public class Main {
 			if (opts.out == null)
 				opts.out = opts.in;
 
-			new JarProcessor(opts.in, opts.out, 
-					Arrays.<LogSystemHandler>asList(
-						new Log4JHandler(),
-						new CommonsLoggingHandler())
+			new WoodChipper(
+				new JarFileSystem(opts.in, opts.out),
+				Arrays.<LogSystemHandler>asList(
+					new Log4JHandler(),
+					new CommonsLoggingHandler())
 				).process();
 
 		} catch (CmdLineException cle) {
