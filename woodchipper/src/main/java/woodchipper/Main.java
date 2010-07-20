@@ -24,8 +24,14 @@ public class Main {
 			if (opts.out == null)
 				opts.out = opts.in;
 
+			AbstractFileSystem fileSystem;
+			if (opts.in.isDirectory())
+				fileSystem = new SimpleFileSystem(opts.in, opts.out);
+			else
+				fileSystem = new JarFileSystem(opts.in, opts.out);
+			
 			new WoodChipper(
-				new JarFileSystem(opts.in, opts.out),
+				fileSystem,
 				Arrays.<LogSystemHandler>asList(
 					new Log4JHandler(),
 					new CommonsLoggingHandler())
@@ -40,10 +46,10 @@ public class Main {
 
 	static class Opts {
 
-		@Option(name="-i", usage=".jar file to read", required=true)
+		@Option(name="-i", usage=".jar file or directory to read from", required=true)
 		private File in;
 
-		@Option(name="-o", usage=".jar file to write to")
+		@Option(name="-o", usage=".jar file or directory to write to")
 		private File out;
 
 	}
